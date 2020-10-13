@@ -1,0 +1,29 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30114.105
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PDFGeneraterService", "PDFGeneraterService\PDFGeneraterService.csproj", "{C5FC0420-A8C1-4C6D-B151-C15193EEAC60}"
+EndProject
+Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "PDFServiceInstaller", "PDFServiceInstaller\PDFServiceInstaller.vdproj", "{282CFD7C-8004-4F5C-AA56-865541B54EA2}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C5FC0420-A8C1-4C6D-B151-C15193EEAC60}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C5FC0420-A8C1-4C6D-B151-C15193EEAC60}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C5FC0420-A8C1-4C6D-B151-C15193EEAC60}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C5FC0420-A8C1-4C6D-B151-C15193EEAC60}.Release|Any CPU.Build.0 = Release|Any CPU
+		{282CFD7C-8004-4F5C-AA56-865541B54EA2}.Debug|Any CPU.ActiveCfg = Debug
+		{282CFD7C-8004-4F5C-AA56-865541B54EA2}.Release|Any CPU.ActiveCfg = Release
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {44CEDA58-9B73-4DDA-ABD5-C0155D5A637B}
+	EndGlobalSection
+EndGlobal
