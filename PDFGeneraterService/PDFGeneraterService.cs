@@ -28,7 +28,9 @@ namespace PDFGeneraterService
 
         protected override void OnStart(string[] args)
         {
-            _timer = new Timer(10 * 60 * 1000);  // 10 minutes expressed as milliseconds
+            int TimerValue =Convert.ToInt32(ConfigurationManager.AppSettings.Get("TimerValue").ToString());
+
+            _timer = new Timer(TimerValue * 60 * 1000); 
             _timer.Elapsed += new ElapsedEventHandler(OnTimerElapsed);
             _timer.AutoReset = true;
             _timer.Start();
@@ -44,9 +46,9 @@ namespace PDFGeneraterService
             string DestinationFolderPath = ConfigurationManager.AppSettings.Get("DestinationFolderPath");
             using (DataTable tableName = new DataTable())
             {
-                try
+                using (SqlConnection sqlcon = new SqlConnection(ConfigurationManager.ConnectionStrings["DBConString"].ToString()))
                 {
-                    using (SqlConnection sqlcon = new SqlConnection(ConfigurationManager.ConnectionStrings["DBConString"].ToString()))
+                    try
                     {
                         using (SqlCommand cmd = new SqlCommand("usp_GetLoanPayOffEmailPdf", sqlcon))
                         {
@@ -54,51 +56,51 @@ namespace PDFGeneraterService
                             using (SqlDataAdapter da = new SqlDataAdapter(cmd))
                             {
                                 da.Fill(tableName);
-
                             }
                         }
                     }
-                }
-                catch (Exception ex)
-                {
-                    log.Error("Error occured while retrieving the email list:{0}", ex);
-                }
-                try
-                {
-                    foreach (DataRow row in tableName.Rows)
+                    catch (Exception ex)
                     {
-                        string LogoName = ConfigurationManager.AppSettings.Get("LogoName");
-                        string ReplaceImagePath = ConfigurationManager.AppSettings.Get("ReplaceImagePath");
-                        string RootPath = AppDomain.CurrentDomain.BaseDirectory.Replace(ReplaceImagePath, LogoName);
-                        int MemberId = Convert.ToInt32(row["MemberId"].ToString());
-                        int Id = Convert.ToInt32(row["Id"].ToString());
-                        String Email = row["Email"].ToString();
-                        string ToAddress = row["ToAddress"].ToString();
-                        string HtmlPdf = Email.Replace("http://origins.patelco.org/staff_share/assets/images/Logo_Patelco.png", RootPath);
-                        byte[] PdfBuffer = new SimplePechkin(new GlobalConfig()).Convert(HtmlPdf);
-                        string FileName = MemberId + "_DemandLetter_" + DateTime.Now.ToString("MM_dd_yyyy") + ".pdf";
-                        bool PDFGeneratedStatus;
-                        PDFGeneratedStatus = ByteArrayToFile(DestinationFolderPath + FileName, PdfBuffer) ? true : false;
-
-                        using (SqlConnection sqlConnectionCmdString = new SqlConnection(ConfigurationManager.ConnectionStrings["DBConString"].ToString()))
+                        log.Error("Error occured while retrieving the email list:{0}", ex);
+                    }
+                }
+                if (tableName.Rows.Count > 1)
+                {
+                    try
+                    {
+                        foreach (DataRow row in tableName.Rows)
                         {
-                            using (SqlCommand sqlRenameCommand = new SqlCommand("usp_UpdateLoanPayOffEmailPdf", sqlConnectionCmdString))
+                            string LogoName = ConfigurationManager.AppSettings.Get("LogoName");
+                            string ReplaceImagePath = ConfigurationManager.AppSettings.Get("ReplaceImagePath");
+                            string RootPath = AppDomain.CurrentDomain.BaseDirectory.Replace(ReplaceImagePath, LogoName);
+                            int MemberId = Convert.ToInt32(row["MemberId"].ToString());
+                            int Id = Convert.ToInt32(row["Id"].ToString());
+                            String Email = row["Email"].ToString();
+                            string ToAddress = row["ToAddress"].ToString();
+                            string HtmlPdf = Email.Replace("http://origins.patelco.org/staff_share/assets/images/Logo_Patelco.png", RootPath);
+                            byte[] PdfBuffer = new SimplePechkin(new GlobalConfig()).Convert(HtmlPdf);
+                            string FileName = MemberId + "_DemandLetter_" + DateTime.Now.ToString("MM_dd_yyyy") + ".pdf";
+                            bool PDFGeneratedStatus;
+                            PDFGeneratedStatus = ByteArrayToFile(DestinationFolderPath + FileName, PdfBuffer) ? true : false;
+
+                            using (SqlConnection sqlConnectionCmdString = new SqlConnection(ConfigurationManager.ConnectionStrings["DBConString"].ToString()))
                             {
-                                sqlRenameCommand.CommandType = CommandType.StoredProcedure;
-                                sqlRenameCommand.Parameters.Add("@Id", SqlDbType.Int).Value = Id;
-                                sqlRenameCommand.Parameters.Add("@PDFGeneratedStatus", SqlDbType.Bit).Value = PDFGeneratedStatus;
-                                sqlConnectionCmdString.Open();
-                                sqlRenameCommand.ExecuteNonQuery();
-                                sqlConnectionCmdString.Close();
+                                using (SqlCommand sqlRenameCommand = new SqlCommand("usp_UpdateLoanPayOffEmailPdf", sqlConnectionCmdString))
+                                {
+                                    sqlRenameCommand.CommandType = CommandType.StoredProcedure;
+                                    sqlRenameCommand.Parameters.Add("@Id", SqlDbType.Int).Value = Id;
+                                    sqlRenameCommand.Parameters.Add("@PDFGeneratedStatus", SqlDbType.Bit).Value = PDFGeneratedStatus;
+                                    sqlConnectionCmdString.Open();
+                                    sqlRenameCommand.ExecuteNonQuery();
+                                    sqlConnectionCmdString.Close();
+                                }
                             }
                         }
                     }
-                }
-
-
-                catch (Exception ex)
-                {
-                    log.Error("Error:", ex);
+                    catch (Exception ex)
+                    {
+                        log.Error("Error:", ex);
+                    }
                 }
             }
         }
@@ -116,7 +118,6 @@ namespace PDFGeneraterService
             catch (Exception _Exception)
             {
                 log.Error("Exception caught in process while trying to save the  PDF: {0}", _Exception);
-
                 return false;
             }
 
